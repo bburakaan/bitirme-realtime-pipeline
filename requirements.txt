@@ -1,0 +1,11 @@
+pandas
+numpy
+faker
+kafka-python
+python-dotenv
+joblib
+scikit-learn
+psycopg2-binary
+fastapi
+uvicorn
+psycopg2-binary
