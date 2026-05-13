@@ -1,9 +1,12 @@
+data/*
+!data/intent/
+data/intent/*
+!data/intent/online_shoppers_intention.csv
+ml/saved_model/
 .venv/
 __pycache__/
 *.pyc
 .env
-data/
-ml/saved_model/
 results/logs/
 results/metrics/
 frontend/node_modules/
