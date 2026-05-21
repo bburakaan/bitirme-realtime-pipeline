@@ -17,6 +17,8 @@ services:
         value: "true"
       - key: ONLINE_DEMO_SLEEP_SEC
         value: "5"
+      - key: ONLINE_DEMO_MIN_SESSIONS
+        value: "100"
       - key: PYTHON_VERSION
         value: 3.11.9
 

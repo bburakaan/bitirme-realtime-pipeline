@@ -13,6 +13,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from db.connection import get_connection
+from db.demo_seed import seed_olist_demo_data
 from db.init_db import init_database
 
 load_dotenv()
@@ -60,6 +61,8 @@ def rows_to_dicts(cur) -> list[dict[str, Any]]:
 @app.on_event("startup")
 def startup_tasks():
     init_database()
+    if ENABLE_DEMO_PRODUCER:
+        seed_olist_demo_data()
 
     if ENABLE_DEMO_PRODUCER:
         from producer.db_demo_worker import run_forever

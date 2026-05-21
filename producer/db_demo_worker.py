@@ -9,12 +9,14 @@ import joblib
 import pandas as pd
 
 from db.connection import get_connection
+from db.demo_seed import get_table_count, seed_olist_demo_data
 from db.init_db import init_database
 from producer.event_generator import generate_session_events
 
 
 MODEL_PATH = Path("ml/saved_model/buyer_model.pkl")
 SLEEP_SEC = int(os.getenv("ONLINE_DEMO_SLEEP_SEC", "5"))
+MIN_SESSIONS = int(os.getenv("ONLINE_DEMO_MIN_SESSIONS", "100"))
 
 FEATURE_COLUMNS = [
     "total_event_count",
@@ -197,7 +199,18 @@ def generate_once(model=None) -> dict[str, Any]:
 
 def run_forever() -> None:
     init_database()
+    seed_olist_demo_data()
     model = load_model()
+    current_sessions = get_table_count("session_features")
+
+    while current_sessions < MIN_SESSIONS:
+        row = generate_once(model)
+        current_sessions += 1
+        print(
+            "Initial online demo session seeded | "
+            f"session_id={row['session_id']} | "
+            f"count={current_sessions}/{MIN_SESSIONS}"
+        )
 
     while True:
         try:
