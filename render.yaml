@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: bitirme-api
+    name: bitirme-backend
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt && python -m ml.train_intent_model
@@ -27,7 +27,7 @@ services:
     staticPublishPath: frontend/dist
     envVars:
       - key: VITE_API_URL
-        value: https://bitirme-api.onrender.com
+        value: https://bitirme-backend-qujr.onrender.com
     routes:
       - type: rewrite
         source: /*

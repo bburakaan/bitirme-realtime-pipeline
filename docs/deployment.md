@@ -20,13 +20,13 @@ https://bitirme-frontend.onrender.com
 Backend URL:
 
 ```text
-https://bitirme-api.onrender.com
+https://bitirme-backend-qujr.onrender.com
 ```
 
 Saglik kontrolu:
 
 ```text
-https://bitirme-api.onrender.com/health
+https://bitirme-backend-qujr.onrender.com/health
 ```
 
 Not: Render demo modu Kafka kullanmadan veri uretir. Bu, online sunumun sorunsuz acilmasi icindir.

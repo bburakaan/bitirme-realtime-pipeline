@@ -19,7 +19,9 @@ load_dotenv()
 
 INTENT_MODEL_PATH = Path("ml/saved_model/intent_model.pkl")
 INTENT_METRICS_PATH = Path("ml/saved_model/intent_model_metrics.json")
-ENABLE_DEMO_PRODUCER = os.getenv("ENABLE_DEMO_PRODUCER", "false").lower() == "true"
+ENABLE_DEMO_PRODUCER = (
+    os.getenv("ENABLE_DEMO_PRODUCER", os.getenv("RENDER", "false")).lower() == "true"
+)
 
 app = FastAPI(title="Realtime E-Commerce Backend API")
 
@@ -102,6 +104,18 @@ def health():
             "database": "not_connected",
             "detail": str(e)
         }
+
+
+@app.get("/deployment-info")
+def deployment_info():
+    return {
+        "render": os.getenv("RENDER", "false"),
+        "service_name": os.getenv("RENDER_SERVICE_NAME"),
+        "service_type": os.getenv("RENDER_SERVICE_TYPE"),
+        "git_branch": os.getenv("RENDER_GIT_BRANCH"),
+        "git_commit": os.getenv("RENDER_GIT_COMMIT"),
+        "demo_producer_enabled": ENABLE_DEMO_PRODUCER,
+    }
 
 
 @app.get("/events/recent")

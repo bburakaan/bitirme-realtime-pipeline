@@ -166,7 +166,7 @@ Public link uzerinden acilacak demo icin `render.yaml` dosyasi hazirdir. Render 
 
 ```text
 https://bitirme-frontend.onrender.com
-https://bitirme-api.onrender.com/health
+https://bitirme-backend-qujr.onrender.com/health
 ```
 
 Render senaryosunda Kafka/Spark yerine `ENABLE_DEMO_PRODUCER=true` ile backend icinde demo veri uretimi calisir. Tam Kafka pipeline'i online gostermek gerekirse VPS/Docker Compose senaryosu kullanilmalidir.
