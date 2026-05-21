@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: bitirme-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && python -m ml.train_intent_model
+    preDeployCommand: python -m db.init_db
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bitirme-postgres
+          property: connectionString
+      - key: FRONTEND_ORIGINS
+        value: https://bitirme-frontend.onrender.com,http://localhost:5173,http://localhost:5175
+      - key: ENABLE_DEMO_PRODUCER
+        value: "true"
+      - key: ONLINE_DEMO_SLEEP_SEC
+        value: "5"
+      - key: PYTHON_VERSION
+        value: 3.11.9
+
+  - type: web
+    name: bitirme-frontend
+    runtime: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://bitirme-api.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+databases:
+  - name: bitirme-postgres
+    plan: free
+    databaseName: realtime_ecommerce
+    user: realtime_ecommerce_user

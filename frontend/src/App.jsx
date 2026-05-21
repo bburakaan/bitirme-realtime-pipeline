@@ -80,7 +80,7 @@ export default function App() {
       setIntentPrediction(samplePredictionRes.data || {});
     } catch (err) {
       console.error("API error:", err);
-      setError("API verisi alınamadı. FastAPI açık mı kontrol et.");
+      setError("API verisi alinamadi. FastAPI acik mi kontrol et.");
     }
   };
 

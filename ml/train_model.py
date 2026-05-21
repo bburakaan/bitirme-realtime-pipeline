@@ -1,21 +1,15 @@
-import os
 from pathlib import Path
 
 import joblib
 import pandas as pd
-import psycopg2
 from dotenv import load_dotenv
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.model_selection import train_test_split
 
-load_dotenv()
+from db.connection import get_connection
 
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = int(os.getenv("DB_PORT", "5432"))
-DB_NAME = os.getenv("DB_NAME", "realtime_ecommerce")
-DB_USER = os.getenv("DB_USER", "postgres")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+load_dotenv()
 
 MODEL_PATH = Path("ml/saved_model/buyer_model.pkl")
 
@@ -32,17 +26,6 @@ FEATURE_COLUMNS = [
 ]
 
 LABEL_COLUMN = "actual_label"
-
-
-def get_connection():
-    return psycopg2.connect(
-        host=DB_HOST,
-        port=DB_PORT,
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-    )
-
 
 def load_training_data() -> pd.DataFrame:
     query = """

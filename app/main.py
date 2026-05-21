@@ -1,5 +1,6 @@
 import os
 import json
+import threading
 import joblib
 import pandas as pd
 
@@ -7,21 +8,18 @@ from typing import Any
 from pathlib import Path
 from pydantic import BaseModel
 
-import psycopg2
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-load_dotenv()
+from db.connection import get_connection
+from db.init_db import init_database
 
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = int(os.getenv("DB_PORT", "5432"))
-DB_NAME = os.getenv("DB_NAME", "realtime_ecommerce")
-DB_USER = os.getenv("DB_USER", "postgres")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+load_dotenv()
 
 INTENT_MODEL_PATH = Path("ml/saved_model/intent_model.pkl")
 INTENT_METRICS_PATH = Path("ml/saved_model/intent_model_metrics.json")
+ENABLE_DEMO_PRODUCER = os.getenv("ENABLE_DEMO_PRODUCER", "false").lower() == "true"
 
 app = FastAPI(title="Realtime E-Commerce Backend API")
 
@@ -29,33 +27,43 @@ intent_model = None
 if INTENT_MODEL_PATH.exists():
     intent_model = joblib.load(INTENT_MODEL_PATH)
 
+default_origins = [
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5175",
+    "http://localhost:5173",
+    "http://localhost:5175",
+    "https://bitirme-frontend.onrender.com",
+]
+configured_origins = [
+    origin.strip()
+    for origin in os.getenv("FRONTEND_ORIGINS", "").split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:5175",
-        "https://bitirme-frontend.onrender.com",
-    ],
+    allow_origins=sorted(set(default_origins + configured_origins)),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-def get_connection():
-    return psycopg2.connect(
-        host=DB_HOST,
-        port=DB_PORT,
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD
-    )
-
-
 def rows_to_dicts(cur) -> list[dict[str, Any]]:
     columns = [desc[0] for desc in cur.description]
     rows = cur.fetchall()
     return [dict(zip(columns, row)) for row in rows]
+
+
+@app.on_event("startup")
+def startup_tasks():
+    init_database()
+
+    if ENABLE_DEMO_PRODUCER:
+        from producer.db_demo_worker import run_forever
+
+        thread = threading.Thread(target=run_forever, daemon=True)
+        thread.start()
 
 
 class IntentPredictionInput(BaseModel):

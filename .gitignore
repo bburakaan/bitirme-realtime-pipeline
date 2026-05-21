@@ -9,6 +9,7 @@ __pycache__/
 .env
 results/logs/
 results/metrics/
+results/spark/
 frontend/node_modules/
 frontend/dist/
 *.zip

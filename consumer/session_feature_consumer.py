@@ -1,4 +1,3 @@
-import psycopg2
 import json
 import os
 import time
@@ -10,6 +9,8 @@ import pandas as pd
 from dotenv import load_dotenv
 from kafka import KafkaConsumer
 
+from db.connection import get_connection
+
 load_dotenv()
 
 
@@ -17,12 +18,6 @@ KAFKA_TOPIC = os.getenv("KAFKA_TOPIC", "user-events")
 KAFKA_SERVER = os.getenv("KAFKA_SERVER", "localhost:9092")
 KAFKA_GROUP_ID = os.getenv("KAFKA_GROUP_ID", "user-events-feature-consumer")
 SESSION_IDLE_TIMEOUT_SEC = int(os.getenv("SESSION_IDLE_TIMEOUT_SEC", "3"))
-
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = int(os.getenv("DB_PORT", "5432"))
-DB_NAME = os.getenv("DB_NAME", "realtime_ecommerce")
-DB_USER = os.getenv("DB_USER", "postgres")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 
 MODEL_PATH = "ml/saved_model/buyer_model.pkl"
 RAW_LOG_PATH = "results/logs/kafka_consumed_events.jsonl"
@@ -50,15 +45,9 @@ def ensure_dirs() -> None:
 
 def connect_db():
     global db_conn
-    db_conn = psycopg2.connect(
-        host=DB_HOST,
-        port=DB_PORT,
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD
-    )
+    db_conn = get_connection()
     db_conn.autocommit = True
-    print(f"Connected to PostgreSQL: {DB_NAME}@{DB_HOST}:{DB_PORT}")
+    print("Connected to PostgreSQL.")
 
 def load_model() -> None:
     global model
