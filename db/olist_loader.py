@@ -1,9 +1,8 @@
 from __future__ import annotations
 
+import zipfile
 from pathlib import Path
-
-import pandas as pd
-from psycopg2.extras import execute_values
+from io import TextIOWrapper
 
 from db.connection import get_connection
 from db.demo_seed import get_table_count, seed_olist_demo_data
@@ -11,7 +10,6 @@ from db.demo_seed import get_table_count, seed_olist_demo_data
 
 DATA_DIR = Path("data/olist")
 FULL_DATA_THRESHOLD = 50_000
-CHUNK_SIZE = 5_000
 
 DATASETS = [
     {
@@ -86,56 +84,40 @@ def full_olist_files_available() -> bool:
 
 
 def clear_olist_tables() -> None:
-    conn = get_connection()
-    try:
+    with get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                """
-                TRUNCATE TABLE
-                    olist_order_payments,
-                    olist_order_items,
-                    olist_orders,
-                    olist_customers,
-                    olist_products
-                RESTART IDENTITY
-                """
-            )
-        conn.commit()
-    finally:
-        conn.close()
+            truncate_olist_tables(cur)
 
 
-def clean_chunk(df: pd.DataFrame, columns: list[str]) -> list[tuple]:
-    chunk = df[columns].where(pd.notna(df[columns]), None)
-    return [tuple(row) for row in chunk.itertuples(index=False, name=None)]
+def truncate_olist_tables(cur) -> None:
+    cur.execute(
+        """
+        TRUNCATE TABLE
+            olist_order_payments,
+            olist_order_items,
+            olist_orders,
+            olist_customers,
+            olist_products
+        RESTART IDENTITY
+        """
+    )
 
 
-def load_dataset(table: str, file_name: str, columns: list[str]) -> int:
+def copy_dataset(cur, table: str, file_name: str, columns: list[str]) -> None:
     path = DATA_DIR / file_name
-    inserted = 0
     columns_sql = ", ".join(columns)
+    copy_sql = (
+        f"COPY {table} ({columns_sql}) "
+        "FROM STDIN WITH (FORMAT CSV, HEADER TRUE, NULL '')"
+    )
 
-    conn = get_connection()
-    try:
-        with conn.cursor() as cur:
-            for df in pd.read_csv(path, chunksize=CHUNK_SIZE):
-                rows = clean_chunk(df, columns)
-                if not rows:
-                    continue
+    with zipfile.ZipFile(path) as archive:
+        inner_name = archive.namelist()[0]
+        with archive.open(inner_name) as raw_file:
+            text_file = TextIOWrapper(raw_file, encoding="utf-8")
+            cur.copy_expert(copy_sql, text_file)
 
-                execute_values(
-                    cur,
-                    f"INSERT INTO {table} ({columns_sql}) VALUES %s",
-                    rows,
-                    page_size=CHUNK_SIZE,
-                )
-                inserted += len(rows)
-        conn.commit()
-    finally:
-        conn.close()
-
-    print(f"Loaded {inserted} rows into {table}")
-    return inserted
+    print(f"Loaded {file_name} into {table}")
 
 
 def load_full_olist_data() -> bool:
@@ -145,14 +127,24 @@ def load_full_olist_data() -> bool:
     if not full_olist_files_available():
         return False
 
-    clear_olist_tables()
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            truncate_olist_tables(cur)
 
-    for dataset in DATASETS:
-        load_dataset(
-            table=dataset["table"],
-            file_name=dataset["file"],
-            columns=dataset["columns"],
-        )
+            for dataset in DATASETS:
+                copy_dataset(
+                    cur,
+                    table=dataset["table"],
+                    file_name=dataset["file"],
+                    columns=dataset["columns"],
+                )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
 
     return True
 
