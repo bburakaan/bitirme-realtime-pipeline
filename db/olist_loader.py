@@ -15,9 +15,12 @@ from db.demo_seed import get_table_count, seed_olist_demo_data
 
 DATA_DIR = Path("data/olist")
 FULL_DATA_THRESHOLD = 50_000
+IS_RENDER = os.getenv("RENDER", "false").lower() == "true"
 INCREMENTAL_BATCH_SIZE = int(os.getenv("OLIST_IMPORT_BATCH_SIZE", "1000"))
 INCREMENTAL_SLEEP_SEC = float(os.getenv("OLIST_IMPORT_SLEEP_SEC", "2"))
-RESET_ON_START = os.getenv("OLIST_RESET_ON_START", "false").lower() == "true"
+RESET_ON_START = (
+    os.getenv("OLIST_RESET_ON_START", "true" if IS_RENDER else "false").lower() == "true"
+)
 
 DATASETS = [
     {
@@ -254,7 +257,7 @@ def load_or_seed_olist_data() -> None:
 
 
 def load_olist_for_online_demo() -> None:
-    mode = os.getenv("OLIST_IMPORT_MODE", "full").lower()
+    mode = os.getenv("OLIST_IMPORT_MODE", "incremental" if IS_RENDER else "full").lower()
 
     if mode == "incremental":
         stream_full_olist_data()
