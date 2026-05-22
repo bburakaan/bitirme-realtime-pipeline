@@ -19,6 +19,14 @@ services:
         value: "5"
       - key: ONLINE_DEMO_MIN_SESSIONS
         value: "100"
+      - key: OLIST_IMPORT_MODE
+        value: incremental
+      - key: OLIST_RESET_ON_START
+        value: "true"
+      - key: OLIST_IMPORT_BATCH_SIZE
+        value: "1000"
+      - key: OLIST_IMPORT_SLEEP_SEC
+        value: "2"
       - key: PYTHON_VERSION
         value: 3.11.9
 

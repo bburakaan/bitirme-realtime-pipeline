@@ -115,6 +115,8 @@ def deployment_info():
         "git_branch": os.getenv("RENDER_GIT_BRANCH"),
         "git_commit": os.getenv("RENDER_GIT_COMMIT"),
         "demo_producer_enabled": ENABLE_DEMO_PRODUCER,
+        "olist_import_mode": os.getenv("OLIST_IMPORT_MODE", "full"),
+        "olist_reset_on_start": os.getenv("OLIST_RESET_ON_START", "false"),
     }
 
 
