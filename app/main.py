@@ -13,8 +13,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from db.connection import get_connection
-from db.demo_seed import seed_olist_demo_data
 from db.init_db import init_database
+from db.olist_loader import load_or_seed_olist_data
 
 load_dotenv()
 
@@ -62,7 +62,7 @@ def rows_to_dicts(cur) -> list[dict[str, Any]]:
 def startup_tasks():
     init_database()
     if ENABLE_DEMO_PRODUCER:
-        seed_olist_demo_data()
+        load_or_seed_olist_data()
 
     if ENABLE_DEMO_PRODUCER:
         from producer.db_demo_worker import run_forever
@@ -360,23 +360,23 @@ def get_intent_model_info():
 @app.get("/intent/sample-input")
 def get_intent_sample_input():
     return {
-        "Administrative": 0,
-        "Administrative_Duration": 0.0,
+        "Administrative": 1,
+        "Administrative_Duration": 6.0,
         "Informational": 0,
         "Informational_Duration": 0.0,
-        "ProductRelated": 10,
-        "ProductRelated_Duration": 627.5,
-        "BounceRates": 0.02,
-        "ExitRates": 0.05,
-        "PageValues": 0.0,
+        "ProductRelated": 15,
+        "ProductRelated_Duration": 579.0,
+        "BounceRates": 0.0,
+        "ExitRates": 0.0125,
+        "PageValues": 63.93506419,
         "SpecialDay": 0.0,
-        "Month": "Feb",
-        "OperatingSystems": 3,
-        "Browser": 3,
-        "Region": 1,
-        "TrafficType": 4,
-        "VisitorType": "Returning_Visitor",
-        "Weekend": True
+        "Month": "Dec",
+        "OperatingSystems": 1,
+        "Browser": 1,
+        "Region": 4,
+        "TrafficType": 2,
+        "VisitorType": "New_Visitor",
+        "Weekend": False
     }
 
 

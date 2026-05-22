@@ -9,8 +9,9 @@ import joblib
 import pandas as pd
 
 from db.connection import get_connection
-from db.demo_seed import get_table_count, seed_olist_demo_data
+from db.demo_seed import get_table_count
 from db.init_db import init_database
+from db.olist_loader import load_or_seed_olist_data
 from producer.event_generator import generate_session_events
 
 
@@ -199,7 +200,7 @@ def generate_once(model=None) -> dict[str, Any]:
 
 def run_forever() -> None:
     init_database()
-    seed_olist_demo_data()
+    load_or_seed_olist_data()
     model = load_model()
     current_sessions = get_table_count("session_features")
 

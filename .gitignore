@@ -2,6 +2,9 @@ data/*
 !data/intent/
 data/intent/*
 !data/intent/online_shoppers_intention.csv
+!data/olist/
+data/olist/*
+!data/olist/*.csv.zip
 ml/saved_model/
 .venv/
 __pycache__/
@@ -13,3 +16,4 @@ results/spark/
 frontend/node_modules/
 frontend/dist/
 *.zip
+!data/olist/*.csv.zip

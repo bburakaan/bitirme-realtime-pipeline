@@ -46,26 +46,12 @@ export default function App() {
       const olistPaymentsRes = await api.get("/olist/payments/summary");
 
       const intentInfoRes = await api.get("/intent/model-info");
+      const sampleInputRes = await api.get("/intent/sample-input");
 
-      const samplePredictionRes = await api.post("/intent/predict", {
-        Administrative: 0,
-        Administrative_Duration: 0,
-        Informational: 0,
-        Informational_Duration: 0,
-        ProductRelated: 10,
-        ProductRelated_Duration: 627.5,
-        BounceRates: 0.02,
-        ExitRates: 0.05,
-        PageValues: 0,
-        SpecialDay: 0,
-        Month: "Feb",
-        OperatingSystems: 3,
-        Browser: 3,
-        Region: 1,
-        TrafficType: 4,
-        VisitorType: "Returning_Visitor",
-        Weekend: true,
-      });
+      const samplePredictionRes = await api.post(
+        "/intent/predict",
+        sampleInputRes.data || {}
+      );
 
       setSummary(summaryRes.data || {});
       setEvents(eventsRes.data?.items || []);
